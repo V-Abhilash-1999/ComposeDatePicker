@@ -9,7 +9,7 @@
 
 
 ### Date Picker
-<img src="https://github.com/V-Abhilash-1999/ComposeDatePicker/screenshots/DatePicker.jpg">
+<img src="https://github.com/V-Abhilash-1999/ComposeDatePicker/blob/main/screenshots/DatePicker.jpg">
 
 ### Year Picker
-<img src="https://github.com/V-Abhilash-1999/ComposeDatePicker/screenshots/YearPicker.jpg">
+<img src="https://github.com/V-Abhilash-1999/ComposeDatePicker/blob/main/screenshots/YearPicker.jpg">
