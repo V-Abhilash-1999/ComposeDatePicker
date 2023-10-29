@@ -4,7 +4,7 @@ import android.icu.text.DateFormat
 import android.icu.text.DisplayContext
 import android.icu.text.SimpleDateFormat
 import android.os.Build
-import android.util.Log
+import android.view.View
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -13,7 +13,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -38,6 +37,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
@@ -52,17 +52,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.text.layoutDirection
 import com.abhilash.apps.composedatepicker.data.YearMonth
 import com.abhilash.apps.composedatepicker.data.on
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
 import java.time.DayOfWeek
 import java.util.Calendar
 import java.util.Locale
@@ -122,21 +125,30 @@ fun DatePicker(
     dateTextStyle: DatePickerTextStyle,
     listener: DatePickerListener
 ) {
+    val layoutDirection = when(locale.layoutDirection) {
+        View.LAYOUT_DIRECTION_RTL -> LayoutDirection.Rtl
+        else -> LayoutDirection.Ltr
+    }
+
     Dialog(
         onDismissRequest = {
             listener.cancelButtonClicked()
         },
         properties = DialogProperties(
-            usePlatformDefaultWidth = false
+            usePlatformDefaultWidth = false,
         )
     ) {
-        DatePickerContent(
-            locale = locale,
-            listener = listener,
-            property = property,
-            dateTextStyle = dateTextStyle,
-            datePickerColor = datePickerColor
-        )
+        CompositionLocalProvider(
+            LocalLayoutDirection provides layoutDirection
+        ) {
+            DatePickerContent(
+                locale = locale,
+                listener = listener,
+                property = property,
+                dateTextStyle = dateTextStyle,
+                datePickerColor = datePickerColor
+            )
+        }
     }
 }
 
@@ -637,7 +649,7 @@ private fun WeekDays(
         horizontalArrangement = Arrangement.SpaceAround
     ) {
         (0..6).forEach { weekDay ->
-            val dayIndex = weekDay + (firstDayOfWeek - 1)
+            val dayIndex = (weekDay + (firstDayOfWeek - 1)) % 7
             val currentDay = Calendar.getInstance(locale).apply {
                 set(2023, 0, 1 + dayIndex)
             }
@@ -687,6 +699,7 @@ private fun MonthDays(
     }
 
     val firstDayOfWeek = currentMonth.firstDayOfWeek
+    val weekDayList = (0..6).map { ((firstDayOfWeek + it) % 7).takeIf { it > 0 } ?: 7  }
 
 
     val firstDayOfMonth = remember (year, month, locale){
@@ -697,7 +710,8 @@ private fun MonthDays(
         }.get(Calendar.DAY_OF_WEEK)
     }
 
-    val initialDayInWeek = ((firstDayOfMonth - firstDayOfWeek + 1) % 7).takeIf { it > 0 } ?: 7
+    val initialDayInWeek = weekDayList.indexOf(firstDayOfMonth) + 1
+    val numberFormat = NumberFormat.getNumberInstance(locale)
 
     Column(
         modifier = Modifier
@@ -735,7 +749,9 @@ private fun MonthDays(
                         }
                     }
 
-                    val dayCalendarText = dayCalendar?.get(Calendar.DAY_OF_MONTH)?.toString() ?: ""
+                    val dayCalendarText = dayCalendar?.let {
+                        numberFormat.format(it.get(Calendar.DAY_OF_MONTH)).toString()
+                    } ?: ""
 
                     Day(
                         text = dayCalendarText,
