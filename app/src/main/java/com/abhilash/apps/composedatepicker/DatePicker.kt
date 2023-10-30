@@ -410,8 +410,7 @@ private fun MonthPicker(
         val year = currentSelectedDate.get(Calendar.YEAR)
         val month = currentSelectedDate.get(Calendar.MONTH)
 
-        val index = ((year - startYear) * 12) + month
-        index
+        ((year - startYear) * 12) + month
     }
 
     val pagerState = rememberPagerState(
@@ -481,8 +480,7 @@ private fun DatePickerHeader(
     locale: Locale,
     setMode: (currentMode: DatePickerMode) -> Unit
 ) {
-
-    val year = currentSelectedDate.get(Calendar.YEAR).toString()
+    val year = currentSelectedDate.get(Calendar.YEAR).getFormattedNumber(locale)
     val monthText = remember(currentSelectedDate) {
         val dateFormat = DateFormat.getInstanceForSkeleton("EMMMd", locale)
         dateFormat.setContext(DisplayContext.CAPITALIZATION_FOR_STANDALONE)
@@ -603,7 +601,7 @@ private fun MonthHeader(
         }
 
         Text(
-            text = "$monthText $year",
+            text = "$monthText ${year.getFormattedNumber(locale)}",
             style = dateTextStyle.monthHeaderTextStyle
         )
 
@@ -715,7 +713,6 @@ private fun MonthDays(
     }
 
     val initialDayInWeek = weekDayList.indexOf(firstDayOfMonth) + 1
-    val numberFormat = NumberFormat.getNumberInstance(locale)
 
     Column(
         modifier = Modifier
@@ -753,9 +750,10 @@ private fun MonthDays(
                         }
                     }
 
-                    val dayCalendarText = dayCalendar?.let {
-                        numberFormat.format(it.get(Calendar.DAY_OF_MONTH)).toString()
-                    } ?: ""
+                    val dayCalendarText = dayCalendar
+                        ?.get(Calendar.DAY_OF_MONTH)
+                        ?.getFormattedNumber(locale)
+                        ?: ""
 
                     Day(
                         text = dayCalendarText,
@@ -816,6 +814,11 @@ private fun RowScope.Day(
             }
         )
     }
+}
+
+private fun Int.getFormattedNumber(locale: Locale): String {
+    val numberFormat = NumberFormat.getNumberInstance(locale)
+    return numberFormat.format(this).toString().replace(",","").replace("\u066c","")
 }
 
 private fun Calendar.isSameAs(calendar: Calendar): Boolean {
