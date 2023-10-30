@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -633,6 +634,9 @@ private fun Modifier.iconModifier(
             onClick = onClick
         )
         .padding(12.dp)
+        .rotate(
+            if(LocalLayoutDirection.current == LayoutDirection.Rtl) 180f else 0f
+        )
 }
 
 @Composable
