@@ -1,5 +1,9 @@
 # Compose Date Picker
 
+![Android Weekly](https://androidweekly.net/issues/issue-595/badge)
+
+Article about this project: [Native Date Picker in Compose](https://abhilash-android-dev.medium.com/native-date-picker-in-compose-bfd6fa581d7c)
+
 ## Features 
 
 - Fully Compose UI
